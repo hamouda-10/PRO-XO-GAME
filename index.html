@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAMOUDA XO Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: rgb(255, 255, 255);
+        }
+        h1  {
+            font-size: 30px;
+            font-weight: bold;
+            color: #ff0000;
+            text-transform: uppercase;
+            text-shadow: 3px 3px 5px rgb(0, 0, 0);
+            background: linear-gradient(to right, #000000, #000000);
+            padding: 20px 20px;
+            border-radius: 10px;
+            display: inline-block;
+            animation: glow 0.5s infinite alternate, slide 0.5s infinite linear;
+        }
+    
+        @keyframes glow {
+            from {
+                text-shadow: 3px 3px 10px rgb(255, 0, 0);
+            }
+            to {
+                text-shadow: 3px 3px 20px rgb(0, 0, 0);
+            }
+        }
+        h1 {
+        margin-bottom: 5px; 
+    }
+    h3 {
+        margin-bottom: 5px; 
+    }
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 70px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .scoreboard span {
+            font-weight: bold;
+            color: yellow;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 20px;
+            justify-content: center;
+            margin: auto;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #000000;
+            font-size: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0px;
+            transition: background 0.5s;
+        }
+        .cell.taken {
+            cursor: not-allowed;
+        }
+        .cell.winning {
+            background-color: gold;
+            box-shadow: 0 0 15px gold;
+        }
+        .winner {
+            font-size: 1.8rem;
+            margin-top: 20px;
+            color: cyan;
+        }
+        .reset-btn {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            background: red;
+            color: rgb(255, 255, 255);
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>HAMOUDA XO GAME</h1><br><br><br>
+    <div class="scoreboard">
+        <div> X :  <span id="scoreX">0</span></div>
+        <div> O : <span id="scoreO">0</span></div>
+    </div><br>
+    <div class="board" id="board"></div>
+    <div class="winner" id="winner"></div>
+    <button class="reset-btn" onclick="resetGame()">Restart</button>
+    
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let scores = { X: 0, O: 0 };
+        const boardElement = document.getElementById('board');
+        const winnerElement = document.getElementById('winner');
+        
+        function createBoard() {
+            boardElement.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.classList.add('cell');
+                cellElement.textContent = cell;
+                cellElement.onclick = () => makeMove(index, cellElement);
+                if (cell) cellElement.classList.add('taken');
+                boardElement.appendChild(cellElement);
+            });
+        }
+        
+        function makeMove(index, cellElement) {
+            if (board[index] || checkWinner()) return;
+            board[index] = currentPlayer;
+            cellElement.textContent = currentPlayer;
+            cellElement.classList.add('taken');
+            const winPattern = checkWinner();
+            if (winPattern) {
+                winnerElement.textContent = `🎉 Player ${currentPlayer} Wins ! 🎉`;
+                scores[currentPlayer]++;
+                document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer];
+                highlightWinningCells(winPattern);
+            } else if (board.every(cell => cell !== '')) {
+                winnerElement.textContent = '🤝 DRAW! 🤝';
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            }
+        }
+        
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (let pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return pattern;
+                }
+            }
+            return null;
+        }
+        
+        function highlightWinningCells(pattern) {
+            pattern.forEach(index => {
+                document.querySelectorAll('.cell')[index].classList.add('winning');
+            });
+        }
+        
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            winnerElement.textContent = '';
+            createBoard();
+        }
+        
+        createBoard();
+    </script>
+</body>
+</html>
