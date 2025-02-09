@@ -99,7 +99,7 @@
 <body>
     <h1>HAMOUDA XO GAME</h1><br>
     <button class="mode-btn" onclick="setMode('pvp')">Player vs Player</button>
-    <button class="mode-btn" onclick="setMode('ai')">Player vs AI</button><br><br>
+    <button class="mode-btn" onclick="setMode('ai')">Player vs AI</button><br>
     <div class="difficulty-container" id="difficulty-container">
         <button class="difficulty-btn" onclick="setDifficulty('easy')">Easy</button>
         <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
@@ -154,7 +154,7 @@
                 document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer];
                 highlightWinningCells(winPattern);
             } else if (board.every(cell => cell !== '')) {
-                winnerElement.textContent = '🤝 DRAW! 🤝';
+                winnerElement.textContent = '🤝 DRAW ! 🤝';
             } else {
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
                 if (gameMode === 'ai' && currentPlayer === 'O') aiMove();
