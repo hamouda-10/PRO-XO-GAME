@@ -21,23 +21,12 @@
             padding: 10px 10px;
             border-radius: 10px;
             display: inline-block;
-            animation: glow 0.5s infinite alternate, slide 0.5s infinite linear;
+            animation: glow 0.5s infinite alternate;
         }
-    
         @keyframes glow {
-            from {
-                text-shadow: 3px 3px 10px rgb(255, 0, 0);
-            }
-            to {
-                text-shadow: 3px 3px 20px rgb(0, 0, 0);
-            }
+            from { text-shadow: 3px 3px 10px rgb(255, 0, 0); }
+            to { text-shadow: 3px 3px 20px rgb(0, 0, 0); }
         }
-        h1 {
-        margin-bottom: 5px; 
-    }
-    h3 {
-        margin-bottom: 5px; 
-    }
         .scoreboard {
             display: flex;
             justify-content: center;
@@ -45,10 +34,7 @@
             font-size: 1.5rem;
             margin-bottom: 20px;
         }
-        .scoreboard span {
-            font-weight: bold;
-            color: yellow;
-        }
+        .scoreboard span { font-weight: bold; color: yellow; }
         .board {
             display: grid;
             grid-template-columns: repeat(3, 100px);
@@ -69,9 +55,7 @@
             border-radius: 0px;
             transition: background 0.5s;
         }
-        .cell.taken {
-            cursor: not-allowed;
-        }
+        .cell.taken { cursor: not-allowed; }
         .cell.winning {
             background-color: gold;
             box-shadow: 0 0 15px gold;
@@ -81,20 +65,47 @@
             margin-top: 20px;
             color: cyan;
         }
-        .reset-btn {
-            margin-top: 20px;
+        .reset-btn, .mode-btn {
+            margin-top: 10px;
             font-size: 1.2rem;
             padding: 10px 20px;
             background: red;
-            color: rgb(255, 255, 255);
+            color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 10px;
         }
+        .difficulty-container {
+            display: none;
+            margin-top: 10px;
+        }
+        .difficulty-btn {
+            margin: 5px;
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: blue;
+            color: white;
+        }
+        .difficulty-btn:hover { background: darkblue; }
+        .mode-btn {
+    margin-right: 10px; /* مسافة بين الأزرار */
+}
+
     </style>
 </head>
 <body>
-    <h1>HAMOUDA XO GAME</h1><br><br>
+    <h1>HAMOUDA XO GAME</h1><br>
+    <button class="mode-btn" onclick="setMode('pvp')">Player vs Player</button>
+    <button class="mode-btn" onclick="setMode('ai')">Player vs AI</button><br><br>
+    <div class="difficulty-container" id="difficulty-container">
+        <button class="difficulty-btn" onclick="setDifficulty('easy')">Easy</button>
+        <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+        <button class="difficulty-btn" onclick="setDifficulty('hard')"> Hard</button>
+        <button class="difficulty-btn" onclick="setDifficulty('impossible')">Very Hard</button>
+    </div><br>
     <div class="scoreboard">
         <div> X :  <span id="scoreX">0</span></div>
         <div> O : <span id="scoreO">0</span></div>
@@ -107,9 +118,19 @@
         let board = ['', '', '', '', '', '', '', '', ''];
         let currentPlayer = 'X';
         let scores = { X: 0, O: 0 };
+        let gameMode = 'pvp';
+        let aiDifficulty = 'easy';
         const boardElement = document.getElementById('board');
         const winnerElement = document.getElementById('winner');
         
+        function setMode(mode) {
+            gameMode = mode;
+            document.getElementById('difficulty-container').style.display = mode === 'ai' ? 'block' : 'none';
+            resetGame();
+        }
+        function setDifficulty(level) {
+            aiDifficulty = level;
+        }
         function createBoard() {
             boardElement.innerHTML = '';
             board.forEach((cell, index) => {
@@ -121,7 +142,6 @@
                 boardElement.appendChild(cellElement);
             });
         }
-        
         function makeMove(index, cellElement) {
             if (board[index] || checkWinner()) return;
             board[index] = currentPlayer;
@@ -137,9 +157,26 @@
                 winnerElement.textContent = '🤝 DRAW! 🤝';
             } else {
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                if (gameMode === 'ai' && currentPlayer === 'O') aiMove();
             }
         }
-        
+        function aiMove() {
+            let moveIndex;
+            if (aiDifficulty === 'impossible') {
+                moveIndex = getBestMove();
+            } else {
+                let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+                if (aiDifficulty === 'easy') {
+                    moveIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                } else if (aiDifficulty === 'medium') {
+                    moveIndex = emptyCells.length > 1 ? emptyCells[1] : emptyCells[0];
+                } else if (aiDifficulty === 'hard') {
+                    moveIndex = emptyCells.includes(4) ? 4 : emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                }
+            }
+            let cellElement = document.querySelectorAll('.cell')[moveIndex];
+            makeMove(moveIndex, cellElement);
+        }
         function checkWinner() {
             const winPatterns = [
                 [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -148,27 +185,68 @@
             ];
             for (let pattern of winPatterns) {
                 const [a, b, c] = pattern;
-                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-                    return pattern;
-                }
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) return pattern;
             }
             return null;
         }
-        
         function highlightWinningCells(pattern) {
-            pattern.forEach(index => {
-                document.querySelectorAll('.cell')[index].classList.add('winning');
-            });
+            pattern.forEach(index => document.querySelectorAll('.cell')[index].classList.add('winning'));
         }
-        
         function resetGame() {
             board = ['', '', '', '', '', '', '', '', ''];
             currentPlayer = 'X';
             winnerElement.textContent = '';
             createBoard();
         }
-        
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let bestMove;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = 'O';
+                    let score = minimax(board, 0, false);
+                    board[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return bestMove;
+        }
+        function minimax(board, depth, isMaximizing) {
+            let result = checkWinner();
+            if (result !== null) {
+                return result[0] === 'O' ? 10 - depth : depth - 10;
+            }
+            if (board.every(cell => cell !== '')) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
         createBoard();
     </script>
 </body>
 </html>
+
