@@ -22,7 +22,7 @@
     border-radius: 10px;
     display: inline-block;
     animation: glow 0.5s infinite alternate;
-    margin-top: 0px; /* قلل الرقم لتقليل المسافة */
+    margin-top: 0px; 
 }
 
         @keyframes glow {
@@ -85,8 +85,8 @@
     margin: 3px;
     padding: 5px;
     font-size: 1.1rem;
-    font-weight: bold; /* جعل الخط أكثر سماكة */
-    text-shadow: 1px rgba(0, 0, 0, 0.5); /* إضافة ظل خفيف لإبراز النص */
+    font-weight: bold; 
+    text-shadow: 1px rgba(0, 0, 0, 0.5); 
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -96,8 +96,8 @@
 
         .difficulty-btn:hover { background: rgb(255, 238, 0); }
         .mode-btn {
-    margin-top: -10px; /* قلل الرقم لتقليل المسافة */
-    margin-right: 10px; /* مسافة بين الأزرار */
+    margin-top: -10px;
+    margin-right: 10px; 
 }
 
 
@@ -171,7 +171,7 @@
     let moveIndex;
 
     if (aiDifficulty === 'impossible') {
-        moveIndex = getBestMove(); // يستخدم Minimax الكامل
+        moveIndex = getBestMove();
     } else {
         let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
         if (aiDifficulty === 'easy') {
@@ -209,7 +209,7 @@ function minimax(board, depth, isMaximizing) {
     if (winner) {
         if (winner === 'O') return 10 - depth;
         if (winner === 'X') return depth - 10;
-        return 0; // تعادل
+        return 0;
     }
 
     if (isMaximizing) {
@@ -310,13 +310,13 @@ function minimax(board, depth, isMaximizing) {
         function getRandomSmartMove() {
     let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
 
-    // اجعل الذكاء الصناعي يختار بشكل عشوائي ولكنه لا يزال ذكيًا
+    
     if (emptyCells.length > 0) {
         if (Math.random() < 0.6) { 
-            // 60% من الوقت يلعب الحركة الأفضل
+          
             return getSmartBestMove();
         } else {
-            // 40% من الوقت يلعب حركة عشوائية
+           
             return emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
     }
