@@ -168,22 +168,75 @@
             }
         }
         function aiMove() {
-            let moveIndex;
-            if (aiDifficulty === 'impossible') {
-                moveIndex = getBestMove();
-            } else {
-                let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
-                if (aiDifficulty === 'easy') {
-                    moveIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                } else if (aiDifficulty === 'medium') {
-                    moveIndex = emptyCells.length > 1 ? emptyCells[1] : emptyCells[0];
-                } else if (aiDifficulty === 'hard') {
-                    moveIndex = emptyCells.includes(4) ? 4 : emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                }
-            }
-            let cellElement = document.querySelectorAll('.cell')[moveIndex];
-            makeMove(moveIndex, cellElement);
+    let moveIndex;
+
+    if (aiDifficulty === 'impossible') {
+        moveIndex = getBestMove(); // يستخدم Minimax الكامل
+    } else {
+        let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+        if (aiDifficulty === 'easy') {
+            moveIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        } else if (aiDifficulty === 'medium') {
+            moveIndex = emptyCells.length > 1 ? emptyCells[1] : emptyCells[0];
+        } else if (aiDifficulty === 'hard') {
+            moveIndex = emptyCells.includes(4) ? 4 : emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
+    }
+
+    let cellElement = document.querySelectorAll('.cell')[moveIndex];
+    makeMove(moveIndex, cellElement);
+}
+
+function getBestMove() {
+    let bestScore = -Infinity;
+    let bestMove;
+    for (let i = 0; i < 9; i++) {
+        if (board[i] === '') {
+            board[i] = 'O';
+            let score = minimax(board, 0, false);
+            board[i] = '';
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = i;
+            }
+        }
+    }
+    return bestMove;
+}
+
+function minimax(board, depth, isMaximizing) {
+    let winner = checkWinner();
+    if (winner) {
+        if (winner === 'O') return 10 - depth;
+        if (winner === 'X') return depth - 10;
+        return 0; // تعادل
+    }
+
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === '') {
+                board[i] = 'O';
+                let score = minimax(board, depth + 1, false);
+                board[i] = '';
+                bestScore = Math.max(score, bestScore);
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === '') {
+                board[i] = 'X';
+                let score = minimax(board, depth + 1, true);
+                board[i] = '';
+                bestScore = Math.min(score, bestScore);
+            }
+        }
+        return bestScore;
+    }
+}
+
         function checkWinner() {
             const winPatterns = [
                 [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -254,6 +307,41 @@
         }
         createBoard();
 
+        function getRandomSmartMove() {
+    let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+
+    // اجعل الذكاء الصناعي يختار بشكل عشوائي ولكنه لا يزال ذكيًا
+    if (emptyCells.length > 0) {
+        if (Math.random() < 0.6) { 
+            // 60% من الوقت يلعب الحركة الأفضل
+            return getSmartBestMove();
+        } else {
+            // 40% من الوقت يلعب حركة عشوائية
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+    }
+    return null;
+}
+
+function aiMove() {
+    let moveIndex;
+
+    if (aiDifficulty === 'impossible') {
+        moveIndex = getRandomSmartMove();
+    } else {
+        let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+        if (aiDifficulty === 'easy') {
+            moveIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        } else if (aiDifficulty === 'medium') {
+            moveIndex = emptyCells.length > 1 ? emptyCells[1] : emptyCells[0];
+        } else if (aiDifficulty === 'hard') {
+            moveIndex = emptyCells.includes(4) ? 4 : emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+    }
+
+    let cellElement = document.querySelectorAll('.cell')[moveIndex];
+    makeMove(moveIndex, cellElement);
+}
 
 
 
@@ -343,6 +431,68 @@ function aiMove() {
 
     let cellElement = document.querySelectorAll('.cell')[moveIndex];
     makeMove(moveIndex, cellElement);
+}
+
+
+
+
+
+function getBestMoveWithVariation() {
+    let bestScore = -Infinity;
+    let bestMove;
+    let emptyCells = board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null);
+
+    for (let i = 0; i < emptyCells.length; i++) {
+        let move = emptyCells[i];
+        board[move] = 'O';
+        let score = minimax(board, 0, false, -Infinity, Infinity);
+        board[move] = '';
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+        }
+    }
+
+    let strongMoves = emptyCells.filter(move => minimax(board, 0, false, -Infinity, Infinity) === bestScore);
+    return strongMoves[Math.floor(Math.random() * strongMoves.length)];
+}
+
+function minimax(board, depth, isMaximizing, alpha, beta) {
+    let result = checkWinner();
+    if (result !== null) {
+        if (result[0] === 'O') return 10 - depth;
+        if (result[0] === 'X') return depth - 10;
+        return 0;
+    }
+
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === '') {
+                board[i] = 'O';
+                let score = minimax(board, depth + 1, false, alpha, beta);
+                board[i] = '';
+                bestScore = Math.max(score, bestScore);
+                alpha = Math.max(alpha, bestScore);
+                if (beta <= alpha) break;
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === '') {
+                board[i] = 'X';
+                let score = minimax(board, depth + 1, true, alpha, beta);
+                board[i] = '';
+                bestScore = Math.min(score, bestScore);
+                beta = Math.min(beta, bestScore);
+                if (beta <= alpha) break;
+            }
+        }
+        return bestScore;
+    }
 }
 
 
